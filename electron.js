@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const url = require('url');
-const server = require('./local-app/index');
+const {  server } = require('./local-app/server');
 
 let mainWindow;
 
