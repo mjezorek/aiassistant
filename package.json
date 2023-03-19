@@ -1,24 +1,27 @@
 {
-  "name": "ai-assistant-pro",
+  "name": "aiassistant",
   "version": "1.0.0",
-  "description": "An AI-powered assistant to help manage your day-to-day life",
-  "main": "index.js",
+  "description": "An AI Assistant powered by OpenAI and GitHub APIs",
+  "main": "electron.js",
   "scripts": {
-    "start": "node local-app/index.js && npm run electron",
-    "electron": "electron .",
-    "build": "electron-builder"
+    "start": "electron ."
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjezorek/aiassistant.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mjezorek/aiassistant/issues"
+  },
+  "homepage": "https://github.com/mjezorek/aiassistant#readme",
   "dependencies": {
     "@octokit/core": "^3.6.0",
-    "axios": "^0.26.1",
-    "express": "^4.17.1",
-    "openai": "^3.2.1"
+    "express": "^4.17.3",
+    "openai": "^0.27.0"
   },
   "devDependencies": {
-    "concurrently": "^7.0.0",
-    "electron": "^16.0.7",
-    "electron-builder": "^23.0.2",
-    "wait-on": "^6.0.0"
-  },
-  "main": "electron.js",
+    "electron": "^16.0.2"
+  }
 }
