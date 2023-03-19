@@ -1,0 +1,24 @@
+{
+  "name": "ai-assistant-pro",
+  "version": "1.0.0",
+  "description": "An AI-powered assistant to help manage your day-to-day life",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run electron\"",
+    "server": "wait-on http://localhost:3000",
+    "electron": "electron .",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "@octokit/core": "^3.6.0",
+    "axios": "^0.26.1",
+    "express": "^4.17.1",
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0",
+    "electron": "^16.0.7",
+    "electron-builder": "^23.0.2",
+    "wait-on": "^6.0.0"
+  }
+}

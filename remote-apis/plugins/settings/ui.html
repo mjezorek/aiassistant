@@ -1,0 +1,42 @@
+<div class="card">
+  <div class="card-header">
+    Settings
+  </div>
+  <div class="card-body">
+    <form id="settings-form">
+      <div class="mb-3">
+        <label for="github-token" class="form-label">GitHub Personal Access Token</label>
+        <input type="password" class="form-control" id="github-token">
+      </div>
+      <div class="mb-3">
+        <label for="openai-api-key" class="form-label">OpenAI API Key</label>
+        <input type="password" class="form-control" id="openai-api-key">
+      </div>
+      <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+  </div>
+</div>
+<script>
+  document.getElementById('settings-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const githubToken = document.getElementById('github-token').value;
+    const openaiApiKey = document.getElementById('openai-api-key').value;
+
+    localStorage.setItem('GITHUB_PERSONAL_ACCESS_TOKEN', githubToken);
+    localStorage.setItem('OPENAI_API_KEY', openaiApiKey);
+
+    try {
+      const response = await fetch('/settings/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      alert(result.message);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to save settings.');
+    }
+  });
+</script>
