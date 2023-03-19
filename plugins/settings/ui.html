@@ -26,7 +26,7 @@
     localStorage.setItem('OPENAI_API_KEY', openaiApiKey);
 
     try {
-      const response = await fetch('/settings/save', {
+      const response = await fetch('/plugins/settings/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
