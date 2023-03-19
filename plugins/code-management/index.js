@@ -2,6 +2,7 @@ const express = require('express');
 const { Octokit } = require('@octokit/core');
 const { OpenAI } = require('openai');
 
+
 const router = express.Router();
 
 const createOctokitInstance = (githubToken) => {
@@ -80,4 +81,5 @@ module.exports = {
   route: '/code-management',
   router: router,
   icon: 'fas fa-code',
+  componentPath: 'plugins/code-management/ui.html',
 };

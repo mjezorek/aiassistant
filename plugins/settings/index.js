@@ -11,4 +11,5 @@ module.exports = {
   route: '/settings',
   router: router,
   icon: 'fas fa-cog',
+  componentPath: 'plugins/settings/ui.html',
 };

@@ -4,8 +4,7 @@
   "description": "An AI-powered assistant to help manage your day-to-day life",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run electron\"",
-    "server": "wait-on http://localhost:3000",
+    "start": "node local-app/index.js && npm run electron",
     "electron": "electron .",
     "build": "electron-builder"
   },
@@ -20,5 +19,6 @@
     "electron": "^16.0.7",
     "electron-builder": "^23.0.2",
     "wait-on": "^6.0.0"
-  }
+  },
+  "main": "electron.js",
 }
