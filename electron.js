@@ -11,7 +11,7 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'public/index.html'));
+  mainWindow.loadFile('http://localhost:3000');
   mainWindow.webContents.openDevTools();
 }
 

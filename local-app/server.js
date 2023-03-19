@@ -17,4 +17,7 @@ serverApp.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-module.exports = { serverApp, server };
+module.exports = {
+  serverApp: serverApp,
+  server: server,
+};
