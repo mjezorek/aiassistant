@@ -1,44 +1,36 @@
 const { app, BrowserWindow } = require('electron');
+const { app: serverApp, server } = require('./local-app/server');
 const path = require('path');
-const url = require('url');
-const {  server } = require('./local-app/server');
-
-let mainWindow;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+  const mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
     webPreferences: {
       nodeIntegration: true,
     },
   });
 
-  server.listen(5000, () => {
-    mainWindow.loadURL(
-      url.format({
-        pathname: path.join(__dirname, 'public/index.html'),
-        protocol: 'file',
-        slashes: true,
-      }),
-    );
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  mainWindow.loadFile(path.join(__dirname, 'public/index.html'));
+  mainWindow.webContents.openDevTools();
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(() => {
+  server.listen(3000, () => {
+    console.log('Server running on http://localhost:3000');
+  });
+
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow();
   }
 });

@@ -1,20 +1,20 @@
 const express = require('express');
-const app = express();
+const serverApp = express();
 const http = require('http');
-const server = http.createServer(app);
+const server = http.createServer(serverApp);
 const { plugins } = require('./plugins');
 
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static('public'));
+serverApp.use(express.json());
+serverApp.use(express.static('public'));
 
 
 for (const plugin of plugins) {
-  app.use(plugin.route, plugin.router);
+  serverApp.use(plugin.route, plugin.router);
 }
-app.listen(port, () => {
+serverApp.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-module.exports = { app, server };
+module.exports = { serverApp, server };
