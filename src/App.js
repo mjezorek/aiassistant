@@ -1,27 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import SettingsPlugin from "./plugins/settings";
+import CodeManagementPlugin from "./plugins/code-management";
 
 function App() {
   const [plugins, setPlugins] = useState([]);
 
   useEffect(() => {
-    const loadPlugins = async () => {
-      const response = await fetch('http://localhost:3000/api/plugins');
-      const pluginInfo = await response.json();
-      const loadedPlugins = await Promise.all(
-        pluginInfo.plugins.map(async (plugin) => {
-          const { default: PluginComponent } = await import(`./plugins/${plugin}`);
-          return <PluginComponent key={plugin} />;
-        })
-      );
-      setPlugins(loadedPlugins);
-    };
-    loadPlugins();
+    async function fetchPlugins() {
+      const response = await fetch("http://localhost:3000/api/plugins");
+      const pluginData = await response.json();
+      setPlugins(pluginData.plugins);
+    }
+
+    fetchPlugins();
   }, []);
 
   return (
     <div className="App">
-      {plugins}
+      <div className="sidebar">
+        <ul className="menu">
+          {plugins.map((plugin) => (
+            <li key={plugin.name} className="menu-item">
+              <i className={plugin.icon}></i> {plugin.name}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="main-content">
+        <SettingsPlugin />
+        <CodeManagementPlugin />
+      </div>
     </div>
   );
 }

@@ -1,24 +1,28 @@
-const express = require('express');
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
+
 const app = express();
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 
 app.use(cors());
-app.use(express.json());
 
-const pluginDir = path.join(__dirname, 'src', 'plugins');
+const pluginPath = path.join(__dirname, "src", "plugins");
+const pluginNames = fs.readdirSync(pluginPath);
 
-fs.readdirSync(pluginDir).forEach((plugin) => {
-  const backendPath = path.join(pluginDir, plugin, 'backend.js');
-  if (fs.existsSync(backendPath)) {
-    const pluginRoutes = require(backendPath);
-    app.use(pluginRoutes);
-  }
-});
-app.get('/api/plugins', (req, res) => {
-  const plugins = fs.readdirSync(pluginDir).map((plugin) => plugin);
-  res.json({ plugins });
+app.get("/api/plugins", (req, res) => {
+  res.json({
+    plugins: pluginNames,
+  });
 });
 
-app.listen(3000, () => console.log('API server listening on port 3000!'));
+app.get("/plugins/:plugin/:file", (req, res) => {
+  const plugin = req.params.plugin;
+  const file = req.params.file;
+  res.sendFile(path.join(pluginPath, plugin, file));
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
