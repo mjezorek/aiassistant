@@ -1,42 +1,24 @@
 const express = require('express');
+const app = express();
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const app = express();
-const port = 3000;
 
-// Load plugins
-const pluginFolderPath = path.join(__dirname, 'src/plugins');
-const plugins = {};
+app.use(cors());
+app.use(express.json());
 
-fs.readdirSync(pluginFolderPath).forEach((folder) => {
-  const pluginPath = path.join(pluginFolderPath, folder);
-  if (fs.lstatSync(pluginPath).isDirectory()) {
-    const pluginName = folder;
-    plugins[pluginName] = require(path.join(pluginPath, 'backend.js'));
+const pluginDir = path.join(__dirname, 'src', 'plugins');
+
+fs.readdirSync(pluginDir).forEach((plugin) => {
+  const backendPath = path.join(pluginDir, plugin, 'backend.js');
+  if (fs.existsSync(backendPath)) {
+    const pluginRoutes = require(backendPath);
+    app.use(pluginRoutes);
   }
 });
-
-// Set up plugin routes
-Object.entries(plugins).forEach(([pluginName, plugin]) => {
-  if (plugin.routes) {
-    plugin.routes.forEach((route) => {
-      app[route.method](`/api/${pluginName}${route.path}`, route.handler);
-    });
-  }
-});
-
-// API endpoint to get the list of available plugins
 app.get('/api/plugins', (req, res) => {
-  const pluginList = Object.keys(plugins);
-  res.json({ plugins: pluginList });
+  const plugins = fs.readdirSync(pluginDir).map((plugin) => plugin);
+  res.json({ plugins });
 });
 
-// Test API endpoint
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Hello from API server!' });
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Local API server listening at http://localhost:${port}`);
-});
+app.listen(3000, () => console.log('API server listening on port 3000!'));
