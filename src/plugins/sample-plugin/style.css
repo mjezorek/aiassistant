@@ -1,0 +1,17 @@
+.sample-plugin-container {
+  background-color: lightgray;
+  padding: 1rem;
+  margin: 1rem;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.sample-plugin-title {
+  color: darkblue;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.sample-plugin-description {
+  font-size: 1rem;
+}
