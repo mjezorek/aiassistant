@@ -5,7 +5,7 @@ const app = express();
 const port = 3000;
 
 // Load plugins
-const pluginFolderPath = path.join(__dirname, 'plugins');
+const pluginFolderPath = path.join(__dirname, 'src/plugins');
 const plugins = {};
 
 fs.readdirSync(pluginFolderPath).forEach((folder) => {
