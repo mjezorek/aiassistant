@@ -1,7 +1,6 @@
 async function loadPlugins() {
   const response = await fetch('http://localhost:3000/api/plugins');
   const pi = await response.json();
-  console.log(pi.plugins);
   const pluginModules = await Promise.all(pi.plugins.map(async plugin => {
     const modulePath = `./plugins/${plugin}/index.js`;
     const module = await import(modulePath);
@@ -18,26 +17,23 @@ function applyPluginStyles(plugin) {
   document.head.appendChild(style);
 }
 
-function createPluginIcon(iconClass) {
-  const iconElement = document.createElement('i');
-  iconElement.className = `${iconClass} text-xl`;
-  return iconElement;
-}
-
 function createSideBarItem(plugin) {
   const item = document.createElement('li');
   item.className = 'cursor-pointer p-4 hover:bg-gray-200';
 
-  const iconElement = createPluginIcon(plugin.icon);
-  item.appendChild(iconElement);
+  const menuItem = document.createElement("li");
+  menuItem.innerHTML = `<i class="${plugin.icon}"></i> ${plugin.name}`;
+  menuItem.classList.add("plugin-menu-item");
+  item.appendChild(menuItem);
 
   item.addEventListener('click', () => {
+    const pluginContents = document.querySelectorAll('.plugin-content');
+    pluginContents.forEach(content => {
+      content.classList.add('hidden');
+    });
+
     const pluginContent = document.getElementById(plugin.name);
-    const visibleContent = document.querySelector('.plugin-content:not(.hidden)');
-    if (visibleContent && visibleContent !== pluginContent) {
-      visibleContent.classList.add('hidden');
-    }
-    pluginContent.classList.toggle('hidden');
+    pluginContent.classList.remove('hidden');
   });
 
   return item;
@@ -57,7 +53,7 @@ async function renderPlugins() {
   appContainer.appendChild(mainArea);
 
   plugins.forEach(plugin => {
-    plugin.init();
+    //plugin.init();
 
     applyPluginStyles(plugin);
 
