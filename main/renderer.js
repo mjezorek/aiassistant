@@ -1,123 +1,128 @@
-// You can add renderer code here or leave it empty
-const inputText = document.getElementById('input-text');
-const submitButton = document.getElementById('submit');
-const settings = require('./settings');
 const path = require('path');
 const fs = require('fs');
-const openai = require('openai');
-
-
-submitButton.addEventListener('click', async () => {
-  const userInput = inputText.value.trim();
-  if (userInput) {
-    console.log(userInput);
-    // Process the user input, e.g., send to main process for further actions
-    const apiKey = settings.load('openai-api-key');
-    if (!apiKey) {
-      // Display a message to the user to update settings
-      const pluginContent = document.getElementById('plugin-content');
-      pluginContent.innerHTML = `<p>Please enter your OpenAI API key in the settings.</p>`;
-      return;
-    }
-
-    openai.apiKey = apiKey;
-    try {
-      const result = await openai.Completion.create({
-        engine: "text-davinci-002", // or "text-curie-002" for GPT-3.5
-        prompt: userInput,
-        max_tokens: 100, // Adjust as needed
-        n: 1,
-        stop: null,
-        temperature: 0.7,
-      });
-
-      if (result.choices && result.choices.length > 0) {
-        const response = result.choices[0].text;
-        // Display the response in the plugin content area
-        const pluginContent = document.getElementById('plugin-content');
-        pluginContent.innerHTML = `<p>${response}</p>`;
-      }
-    } catch (error) {
-      console.error('Error using OpenAI API:', error.message);
-    }
-  }
-});
-
-
-
 const { loadPlugins } = require('./plugins');
-const plugins = loadPlugins();
+const settings = require('./settings');
 
-// Initialize all plugins
-plugins.forEach((plugin) => {
-  // Load the plugin CSS file
+init();
+
+function init() {
+  setupInputHandler();
+  loadSettings();
+  initPlugins();
+}
+
+function setupInputHandler() {
+  const inputText = document.getElementById('input-text');
+  const submitButton = document.getElementById('submit');
+  const spinner = document.getElementById('spinner');
+
+  inputText.addEventListener('keydown', async (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const userInput = inputText.value.trim();
+      if (userInput) {
+        spinner.style.display = 'inline-block';
+        await processUserInput(userInput);
+        spinner.style.display = 'none';
+      }
+    }
+  });
+
+  submitButton.addEventListener('click', async () => {
+    const userInput = inputText.value.trim();
+    if (userInput) {
+      spinner.style.display = 'inline-block';
+      await processUserInput(userInput);
+      spinner.style.display = 'none';
+    }
+  });
+}
+
+
+async function processUserInput(userInput) {
+  try {
+    const response = await fetch('http://localhost:3000/api/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userInput }),
+    });
+
+    const result = await response.json();
+    if (result.choices && result.choices.length > 0) {
+      displayMessage(result.choices[0].text);
+    }
+  } catch (error) {
+    console.error('Error using OpenAI API:', error.message);
+  }
+}
+
+function displayMessage(message) {
+  document.getElementById('plugins-container').innerHTML = `<p>${message}</p>`;
+}
+
+function loadSettings() {
+  document.getElementById('settings-icon').addEventListener('click', () => {
+    openSettings();
+  });
+}
+
+function openSettings() {
+  const htmlPath = path.join(__dirname, 'settings.html');
+  fs.readFile(htmlPath, 'utf-8', (err, data) => {
+    if (err) return console.error(`Error reading settings HTML file: ${err.message}`);
+
+    document.getElementById('plugins-container').innerHTML = data;
+    const apiKey = settings.get('openai-api-key');
+    if (apiKey) document.getElementById('openai-api-key').value = apiKey;
+
+    document.getElementById('settings-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      settings.set('openai-api-key', document.getElementById('openai-api-key').value);
+    });
+  });
+}
+
+function initPlugins() {
+  loadPlugins().forEach((plugin) => {
+    loadPluginCss(plugin);
+    createPluginIcon(plugin);
+    loadPluginHtml(plugin);
+    plugin.init();
+  });
+}
+
+function loadPluginCss(plugin) {
   const cssPath = path.join(__dirname, '..', 'plugins', plugin.name, `${plugin.name}.css`);
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = cssPath;
   document.head.appendChild(link);
+}
+
+function createPluginIcon(plugin) {
   if (plugin.icon) {
-    const iconContainer = document.getElementById('plugin-icons-container');
     const icon = document.createElement('i');
     icon.className = `fa fa-${plugin.icon}`;
-    iconContainer.appendChild(icon);
-
-    // Add a click event listener to show the plugin's content when clicked
-    icon.addEventListener('click', () => {
-      // Hide all other plugin content
-      const pluginContent = document.querySelectorAll('.plugin-content');
-      pluginContent.forEach((content) => {
-        content.style.display = 'none';
-      });
-
-      // Show the content of the clicked plugin
-      const pluginHtml = document.getElementById(`${plugin.name}-content`);
-      pluginHtml.style.display = 'block';
-    });
+    document.getElementById('plugin-icons-container').appendChild(icon);
+    icon.addEventListener('click', () => displayPluginContent(plugin));
   }
-  // Load the plugin HTML file
+}
+
+function loadPluginHtml(plugin) {
   const htmlPath = path.join(__dirname, '..', 'plugins', plugin.name, `${plugin.name}.html`);
   fs.readFile(htmlPath, 'utf-8', (err, data) => {
-    if (err) {
-      console.error(`Error reading plugin HTML file: ${err.message}`);
-      return;
-    }
+    if (err) return console.error(`Error reading plugin HTML file: ${err.message}`);
+    document.getElementById('plugins-container').insertAdjacentHTML('beforeend', data);
+  });
+}
 
-    // Add the plugin HTML to the main application
-    const pluginContainer = document.getElementById('plugins-container');
-    pluginContainer.insertAdjacentHTML('beforeend', data);
+function displayPluginContent(plugin) {
+	console.log(plugin);
+  document.querySelectorAll('.plugin-content').forEach((content) => {
+    content.style.display = 'none';
   });
 
-  // Initialize the plugin
-  plugin.init();
-});
+  document.getElementById(`${plugin.name}-content`).style.display = 'block';
+}
 
-  const settingsIcon = document.getElementById('settings-icon');
-  settingsIcon.addEventListener('click', () => {
-     const htmlPath = path.join(__dirname, 'settings.html');
-  fs.readFile(htmlPath, 'utf-8', (err, data) => {
-    if (err) {
-      console.error(`Error reading settings HTML file: ${err.message}`);
-      return;
-    }
-
-    // Add the settings HTML to the main application
-    const settingsContainer = document.getElementById('plugins-container');
-    settingsContainer.innerHTML = data;
-
-    // Handle form submission
-    const settingsForm = document.getElementById('settings-form');
-    settingsForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const apiKey = document.getElementById('openai-api-key').value;
-      settings.update('openai-api-key', apiKey);
-    });
-  });
-  });
-
-// Load and apply settings
-const currentSettings = settings.load();
-console.log(settings);
-// Use currentSettings to apply the theme, font size, etc.
-// Update settings
-settings.update('theme', 'dark');
+console.log(settings.store);

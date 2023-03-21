@@ -1,6 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV !== 'production';
+const server = require('../server');
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
