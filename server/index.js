@@ -15,11 +15,8 @@ function loadPluginRoutes() {
   fs.readdirSync(pluginDir).forEach((pluginName) => {
     const apiPath = path.join(pluginDir, pluginName, 'api.js');
     if (fs.existsSync(apiPath)) {
-      console.log(apiPath);
       const pluginRoutes = require(apiPath);
-      console.log(pluginRoutes);
       app.use('/api/plugins/', pluginRoutes);
-      console.log(app);
     }
   });
 }

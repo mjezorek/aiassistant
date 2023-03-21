@@ -20,8 +20,11 @@ function init() {
   });
 }
 
+
+
 async function startRecording() {
   try {
+    console.log('this thing on');
     const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder = new MediaRecorder(mediaStream);
 
@@ -32,10 +35,20 @@ async function startRecording() {
     });
 
     mediaRecorder.addEventListener('stop', async () => {
+      const spinner = document.getElementById("spinner");
+      const submitText = document.getElementById("submit-text");
+      submitText.style.display = "none";
+      spinner.style.display = "inline-block";
       const blob = new Blob(recordedChunks, { type: 'audio/webm' });
       recordedChunks = [];
-      const voiceInput = await sendAudioToServer(blob);
-      document.getElementById('input-text').value = voiceInput;
+      const transcription = await sendAudioToServer(blob);
+      if (transcription) {
+        displayMessage(transcription, "voice", "user");
+        handleClick(transcription);
+      }
+      spinner.style.display = "none";
+      submitText.style.display = "inline";
+      document.getElementById('input-text').value = transcription;
     });
 
     mediaRecorder.start();

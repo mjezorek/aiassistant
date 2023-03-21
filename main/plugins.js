@@ -18,9 +18,8 @@ const loadPlugins = () => {
     if (fs.existsSync(indexPath)) {
       const plugin = require(indexPath);
       plugins.push(plugin);
-      console.log(plugins);
     } else {
-      console.warn(`Plugin directory "${directory}" does not have an index.js file, skipping.`);
+      // do nothing
     }
   });
 

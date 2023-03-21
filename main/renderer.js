@@ -15,10 +15,8 @@ function init() {
   initPlugins();
 }
 
-ipcRenderer.on("voice-input", (event, transcription) => {
-  displayMessage(transcription, "voice", "user");
-  handleClick(transcription); // Call handleClick with transcription
-});
+
+
 
 async function handleClick(transcription = null) {
   const inputText = document.getElementById('input-text');
@@ -28,6 +26,7 @@ async function handleClick(transcription = null) {
 
   const userInput = transcription || inputText.value.trim();
   if (userInput) {
+  	console.log('there is input');
     submitButton.disabled = true;
     submitText.style.display = "none";
     spinner.style.display = "inline-block";
@@ -170,5 +169,3 @@ function displayPluginContent(plugin) {
 
   document.getElementById(`${plugin.name}-content`).style.display = 'block';
 }
-
-console.log(settings.store);
