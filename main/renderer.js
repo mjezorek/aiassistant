@@ -14,28 +14,30 @@ function init() {
 function setupInputHandler() {
   const inputText = document.getElementById('input-text');
   const submitButton = document.getElementById('submit');
+  const submitText = document.getElementById('submit-text');
   const spinner = document.getElementById('spinner');
+
+  async function handleClick() {
+    const userInput = inputText.value.trim();
+    if (userInput) {
+      submitButton.disabled = true;
+      submitText.style.display = 'none';
+      spinner.style.display = 'inline-block';
+      await processUserInput(userInput);
+      spinner.style.display = 'none';
+      submitText.style.display = 'inline';
+      submitButton.disabled = false;
+    }
+  }
 
   inputText.addEventListener('keydown', async (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      const userInput = inputText.value.trim();
-      if (userInput) {
-        spinner.style.display = 'inline-block';
-        await processUserInput(userInput);
-        spinner.style.display = 'none';
-      }
+      handleClick();
     }
   });
 
-  submitButton.addEventListener('click', async () => {
-    const userInput = inputText.value.trim();
-    if (userInput) {
-      spinner.style.display = 'inline-block';
-      await processUserInput(userInput);
-      spinner.style.display = 'none';
-    }
-  });
+  submitButton.addEventListener('click', handleClick);
 }
 
 
