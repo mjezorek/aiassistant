@@ -43,12 +43,10 @@ async function startRecording() {
       recordedChunks = [];
       const transcription = await sendAudioToServer(blob);
       if (transcription) {
-        displayMessage(transcription, "voice", "user");
         handleClick(transcription);
       }
       spinner.style.display = "none";
       submitText.style.display = "inline";
-      document.getElementById('input-text').value = transcription;
     });
 
     mediaRecorder.start();

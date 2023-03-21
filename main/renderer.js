@@ -26,13 +26,14 @@ async function handleClick(transcription = null) {
 
   const userInput = transcription || inputText.value.trim();
   if (userInput) {
-  	console.log('there is input');
     submitButton.disabled = true;
     submitText.style.display = "none";
     spinner.style.display = "inline-block";
     displayMessage(userInput, transcription ? "voice" : "text", "user");
     await processInput(userInput, transcription ? "voice" : "text");
-    inputText.value = transcription ? inputText.value : ""; // Clear the input field
+    if (!transcription) {
+      inputText.value = ""; // Clear the input field only if handleClick is called without the transcription argument
+    }
     spinner.style.display = "none";
     submitText.style.display = "inline";
     submitButton.disabled = false;
