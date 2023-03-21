@@ -1,18 +1,34 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const { Configuration, OpenAIApi } = require("openai");
 const settings = require('../main/settings');
 
 const app = express();
 const port = 3000;
 
+
 app.use(express.json());
 
+function loadPluginRoutes() {
+  const pluginDir = path.join(__dirname, '..', 'plugins');
+  fs.readdirSync(pluginDir).forEach((pluginName) => {
+    const apiPath = path.join(pluginDir, pluginName, 'api.js');
+    if (fs.existsSync(apiPath)) {
+      console.log(apiPath);
+      const pluginRoutes = require(apiPath);
+      console.log(pluginRoutes);
+      app.use('/api/plugins/', pluginRoutes);
+      console.log(app);
+    }
+  });
+}
 
+loadPluginRoutes(); // Ca
 
-app.post('/api/completions', async (req, res) => {
-
-  const userInput = req.body.userInput;
-
+app.post('/api/chat', async (req, res) => {
+  const userInput = req.body.messages;
+  console.log(req.body);
   const apiKey = settings.get('openai-api-key');
   if (!apiKey) {
     res.status(400).json({ error: 'API key not found' });
@@ -25,17 +41,21 @@ app.post('/api/completions', async (req, res) => {
   const openai = new OpenAIApi(configuration);
 
   try {
-    const result = await openai.createCompletion({
-      model: "text-davinci-002",
-      prompt: JSON.stringify(userInput),
+    // Modify the prompt to use chat format
+    const result = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: userInput
     });
-    console.log(result.data);
-    res.json(result.data);
+
+    // Extract the assistant's response from the result
+    const assistantResponse = result.data.choices[0].message.content;
+    res.json({ response: assistantResponse });
   } catch (error) {
     console.error('Error using OpenAI API:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);

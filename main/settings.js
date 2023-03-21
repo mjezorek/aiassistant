@@ -6,6 +6,7 @@ const settings = new Store({
   defaults: {
     theme: 'light',
     fontSize: 14,
+    
   },
 });
 

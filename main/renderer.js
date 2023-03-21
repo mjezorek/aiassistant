@@ -2,7 +2,11 @@ const path = require('path');
 const fs = require('fs');
 const { loadPlugins } = require('./plugins');
 const settings = require('./settings');
+const { ipcRenderer } = require("electron");
 
+let conversationHistory = [
+  { role: "system", content: "User starts the assistant." },
+];
 init();
 
 function init() {
@@ -11,24 +15,35 @@ function init() {
   initPlugins();
 }
 
-function setupInputHandler() {
+ipcRenderer.on("voice-input", (event, transcription) => {
+  displayMessage(transcription, "voice", "user");
+  handleClick(transcription); // Call handleClick with transcription
+});
+
+async function handleClick(transcription = null) {
   const inputText = document.getElementById('input-text');
   const submitButton = document.getElementById('submit');
   const submitText = document.getElementById('submit-text');
   const spinner = document.getElementById('spinner');
 
-  async function handleClick() {
-    const userInput = inputText.value.trim();
-    if (userInput) {
-      submitButton.disabled = true;
-      submitText.style.display = 'none';
-      spinner.style.display = 'inline-block';
-      await processUserInput(userInput);
-      spinner.style.display = 'none';
-      submitText.style.display = 'inline';
-      submitButton.disabled = false;
-    }
+  const userInput = transcription || inputText.value.trim();
+  if (userInput) {
+    submitButton.disabled = true;
+    submitText.style.display = "none";
+    spinner.style.display = "inline-block";
+    displayMessage(userInput, transcription ? "voice" : "text", "user");
+    await processInput(userInput, transcription ? "voice" : "text");
+    inputText.value = transcription ? inputText.value : ""; // Clear the input field
+    spinner.style.display = "none";
+    submitText.style.display = "inline";
+    submitButton.disabled = false;
   }
+}
+
+function setupInputHandler() {
+  const inputText = document.getElementById('input-text');
+  const submitButton = document.getElementById('submit');
+  const newConvo = document.getElementById('new');
 
   inputText.addEventListener('keydown', async (event) => {
     if (event.key === 'Enter') {
@@ -37,30 +52,56 @@ function setupInputHandler() {
     }
   });
 
-  submitButton.addEventListener('click', handleClick);
+  function newConvoClick() {
+    conversationHistory = [
+      { role: "system", content: "User starts the assistant." },
+    ];
+  }
+
+  newConvo.addEventListener('click', newConvoClick);
+  submitButton.addEventListener('click', () => handleClick());
 }
 
+// The rest of the file remains the same...
 
-async function processUserInput(userInput) {
+
+
+
+async function processInput(userInput, type, sender = "assistant") {
+  conversationHistory.push({ role: "user", content: userInput });
+
   try {
-    const response = await fetch('http://localhost:3000/api/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userInput }),
+    const response = await fetch("http://localhost:3000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages: conversationHistory }),
     });
 
     const result = await response.json();
-    if (result.choices && result.choices.length > 0) {
-      displayMessage(result.choices[0].text);
+    if (result.response) {
+      const responseText = result.response;
+      conversationHistory.push({ role: "assistant", content: responseText });
+      displayMessage(responseText, type, sender);
     }
   } catch (error) {
-    console.error('Error using OpenAI API:', error.message);
+    console.error("Error using OpenAI API:", error.message);
   }
 }
 
-function displayMessage(message) {
-  document.getElementById('plugins-container').innerHTML = `<p>${message}</p>`;
+function displayMessage(message, type, sender = "assistant") {
+  const conversationHistory = document.getElementById("conversation-history");
+  const messageElement = document.createElement("div");
+
+  messageElement.classList.add("message", sender);
+  messageElement.innerText = message;
+
+  conversationHistory.appendChild(messageElement);
+  conversationHistory.scrollTop = conversationHistory.scrollHeight;
 }
+
+
 
 function loadSettings() {
   document.getElementById('settings-icon').addEventListener('click', () => {
@@ -76,10 +117,13 @@ function openSettings() {
     document.getElementById('plugins-container').innerHTML = data;
     const apiKey = settings.get('openai-api-key');
     if (apiKey) document.getElementById('openai-api-key').value = apiKey;
+	const cloudCreds = settings.get('google-cloud-credentials');
+    if (apiKey) document.getElementById('google-cloud-credentials').value = cloudCreds;
 
     document.getElementById('settings-form').addEventListener('submit', (event) => {
       event.preventDefault();
       settings.set('openai-api-key', document.getElementById('openai-api-key').value);
+      settings.set('google-cloud-credentials', document.getElementById('google-cloud-credentials').value); // Add this line
     });
   });
 }
