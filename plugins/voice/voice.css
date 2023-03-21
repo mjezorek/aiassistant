@@ -1,0 +1,13 @@
+#voice-content {
+  display: none;
+}
+
+#record-btn,
+#stop-btn,
+#transcribe-btn {
+  margin: 10px;
+}
+
+#transcription {
+  margin-top: 20px;
+}
